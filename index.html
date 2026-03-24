@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Imposter">
+<meta name="theme-color" content="#0a0a0f">
+<title>Imposter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131c;
+    --surface2: #1c1c2a;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0f0f5;
+    --muted: rgba(240,240,245,0.4);
+    --accent: #ff3c5a;
+    --accent2: #4af0a0;
+    --friendly: #4af0a0;
+    --impostor: #ff3c5a;
+    --card-hidden: #13131c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%; width: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ───── SCREENS ───── */
+  .screen {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .screen.active { opacity: 1; pointer-events: all; }
+
+  /* ───── LOGO / HOME ───── */
+  #screen-home {
+    background: var(--bg);
+    gap: 0;
+  }
+
+  .logo-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 56px;
+  }
+  .logo-icon {
+    width: 80px; height: 80px;
+    background: var(--accent);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 0 40px rgba(255,60,90,0.4);
+  }
+  .logo-icon svg { width: 44px; height: 44px; }
+  .logo-title {
+    font-size: 42px; font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .logo-title span { color: var(--accent); }
+  .logo-sub {
+    margin-top: 8px;
+    font-size: 13px; font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ───── BUTTONS ───── */
+  .btn {
+    width: 100%; max-width: 340px;
+    padding: 18px 24px;
+    border: none; border-radius: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+    letter-spacing: 0.5px;
+  }
+  .btn:active { transform: scale(0.97); opacity: 0.9; }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 24px rgba(255,60,90,0.35);
+  }
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  /* ───── SETUP SCREEN ───── */
+  #screen-setup {
+    gap: 20px;
+    overflow-y: auto;
+    justify-content: flex-start;
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+
+  .setup-header {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .setup-header h2 {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .setup-header p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .field-group {
+    width: 100%; max-width: 340px;
+  }
+  .field-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  /* Stepper */
+  .stepper {
+    display: flex; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    height: 52px;
+  }
+  .stepper-btn {
+    width: 52px; height: 52px; flex-shrink: 0;
+    background: transparent; border: none;
+    color: var(--text); font-size: 22px; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .stepper-btn:active { background: var(--surface2); }
+  .stepper-val {
+    flex: 1; text-align: center;
+    font-size: 20px; font-weight: 700;
+    font-family: 'Syne Mono', monospace;
+  }
+
+  /* Player list */
+  .player-list {
+    width: 100%; max-width: 340px;
+    display: flex; flex-direction: column;
+    gap: 8px;
+  }
+  .player-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .player-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .player-input:focus { border-color: rgba(255,255,255,0.25); }
+  .player-input::placeholder { color: var(--muted); }
+  .remove-btn {
+    width: 40px; height: 40px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer;
+    color: var(--muted); font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .remove-btn:active { color: var(--accent); }
+
+  .add-player-btn {
+    width: 100%; max-width: 340px;
+    padding: 13px;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .add-player-btn:active { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+  /* ───── ROUND SCREEN ───── */
+  #screen-round {
+    gap: 0;
+    justify-content: flex-end;
+    padding-bottom: 48px;
+  }
+
+  .round-top {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 56px 24px 20px;
+    text-align: center;
+  }
+  .round-progress {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .round-name {
+    font-size: 34px; font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.05;
+  }
+  .round-instruction {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* The hold card */
+  .card-area {
+    width: 100%; max-width: 340px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .hold-card {
+    width: 100%;
+    aspect-ratio: 3/2;
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    -webkit-touch-callout: none;
+  }
+
+  /* Hidden state */
+  .hold-card.hidden {
+    background: var(--surface);
+  }
+  .hold-card.hidden .card-content { display: none; }
+  .hold-card.hidden .card-hint { display: flex; }
+
+  /* Revealed state */
+  .hold-card.revealed.friendly {
+    background: linear-gradient(135deg, #0f2a1e 0%, #0d2219 100%);
+    border-color: rgba(74,240,160,0.3);
+    box-shadow: 0 0 40px rgba(74,240,160,0.15);
+  }
+  .hold-card.revealed.impostor {
+    background: linear-gradient(135deg, #2a0f15 0%, #220d12 100%);
+    border-color: rgba(255,60,90,0.3);
+    box-shadow: 0 0 40px rgba(255,60,90,0.2);
+  }
+  .hold-card.revealed .card-content { display: flex; }
+  .hold-card.revealed .card-hint { display: none; }
+
+  .card-hint {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-hint-icon {
+    width: 48px; height: 48px;
+    background: var(--surface2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-hint-icon svg { width: 24px; height: 24px; opacity: 0.5; }
+  .card-hint-text {
+    font-size: 13px; font-weight: 600;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .card-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 20px;
+    text-align: center;
+  }
+  .card-role-badge {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+    margin-bottom: 4px;
+  }
+  .friendly .card-role-badge {
+    background: rgba(74,240,160,0.15);
+    color: var(--friendly);
+  }
+  .impostor .card-role-badge {
+    background: rgba(255,60,90,0.15);
+    color: var(--impostor);
+  }
+  .card-word {
+    font-size: 36px; font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .friendly .card-word { color: var(--friendly); }
+  .impostor .card-word { color: var(--impostor); }
+
+  .card-subtext {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+
+
+  /* ───── SUMMARY ───── */
+  #screen-done {
+    gap: 20px;
+  }
+  .done-title {
+    font-size: 32px; font-weight: 800;
+    letter-spacing: -1px;
+    text-align: center;
+  }
+  .done-subtitle {
+    font-size: 14px; color: var(--muted);
+    text-align: center;
+    margin-top: -8px;
+  }
+  .impostors-reveal {
+    width: 100%; max-width: 340px;
+    background: var(--surface);
+    border: 1px solid rgba(255,60,90,0.2);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .impostors-reveal h3 {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--impostor);
+    margin-bottom: 14px;
+  }
+  .impostor-name-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .impostor-name-item:last-child { border-bottom: none; }
+  .impostor-dot {
+    width: 8px; height: 8px;
+    background: var(--impostor);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .impostor-name-val {
+    font-size: 17px; font-weight: 700;
+  }
+  .word-reveal {
+    width: 100%; max-width: 340px;
+    background: var(--surface);
+    border: 1px solid rgba(74,240,160,0.15);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+  .word-reveal-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .word-reveal-word {
+    font-size: 30px; font-weight: 800;
+    color: var(--friendly);
+    letter-spacing: -0.5px;
+  }
+
+  /* ───── NOISE TEXTURE ───── */
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ───── DIVIDER ───── */
+  .divider {
+    width: 100%; max-width: 340px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Error */
+  .error-msg {
+    font-size: 12px;
+    color: var(--accent);
+    text-align: center;
+    min-height: 18px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="22" cy="16" r="8" fill="white"/>
+        <path d="M6 38c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <path d="M32 12l4 4-4 4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+      </svg>
+    </div>
+    <div class="logo-title">IM<span>P</span>OSTER</div>
+    <div class="logo-sub">Hvem lyver?</div>
+  </div>
+  <button class="btn btn-primary" onclick="showScreen('setup')">Start spillet</button>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div class="setup-header">
+    <h2>Sett opp runden</h2>
+    <p>Skriv inn navn og velg antall impostorer</p>
+  </div>
+
+  <div class="field-group">
+    <div class="field-label">Antall impostorer</div>
+    <div class="stepper">
+      <button class="stepper-btn" onclick="changeImpostors(-1)">−</button>
+      <div class="stepper-val" id="impostor-count">1</div>
+      <button class="stepper-btn" onclick="changeImpostors(1)">+</button>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-label">Spillere</div>
+    <div class="player-list" id="player-list"></div>
+  </div>
+
+  <button class="add-player-btn" onclick="addPlayerField()">+ Legg til spiller</button>
+
+  <div class="error-msg" id="setup-error"></div>
+
+  <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px;">
+    <button class="btn btn-primary" onclick="startGame()">Start</button>
+    <button class="btn btn-ghost" onclick="showScreen('home')">Tilbake</button>
+  </div>
+</div>
+
+<!-- ROUND (card reveal) -->
+<div id="screen-round" class="screen">
+  <div class="round-top">
+    <div class="round-progress" id="round-progress">Spiller 1 av 5</div>
+    <div class="round-name" id="round-name">Ole</div>
+    <div class="round-instruction">Hold inne kortet for å se rollen din.<br>Ikke vis til andre!</div>
+  </div>
+
+  <div class="card-area">
+    <div class="hold-card hidden" id="hold-card"
+      ontouchstart="startHold(event)" ontouchend="endHold(event)"
+      onmousedown="startHold(event)" onmouseup="endHold(event)" onmouseleave="endHold(event)">
+
+      <!-- Hidden state -->
+      <div class="card-hint">
+        <div class="card-hint-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="card-hint-text">Hold inne for å se rollen din</div>
+      </div>
+
+      <!-- Revealed state -->
+      <div class="card-content">
+        <div class="card-role-badge" id="card-role-badge">VENN</div>
+        <div class="card-word" id="card-word">Isbjørn</div>
+        <div class="card-subtext" id="card-subtext">Husk det! Si ikke ordet høyt.</div>
+      </div>
+
+
+    </div>
+
+    <button class="btn btn-primary" id="next-btn" onclick="nextPlayer()" style="display:none;">Neste spiller</button>
+    <button class="btn btn-ghost" id="done-btn" onclick="showSummary()" style="display:none;">Se hvem som er impostor</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="screen-done" class="screen">
+  <div class="done-title">Runden er klar!</div>
+  <div class="done-subtitle">Nå kan dere begynne å gi hint</div>
+
+  <div class="impostors-reveal" id="impostors-reveal"></div>
+  <div class="word-reveal" id="word-reveal"></div>
+
+  <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px;">
+    <button class="btn btn-primary" onclick="newRound()">Ny runde (samme lag)</button>
+    <button class="btn btn-ghost" onclick="showScreen('home')">Nytt spill</button>
+  </div>
+</div>
+
+<script>
+// ───────────────────────────────────────────────
+// WORD BANK
+// ───────────────────────────────────────────────
+const CATEGORIES = {
+  "Dyr": ["Isbjørn","Sjiraff","Pingvin","Krokodille","Elefant","Flamingo","Gorilla","Ørn","Hai","Kamel","Manet","Oter","Pelikaner","Rev","Sebra","Ulv","Bever","Flodhest","Koala","Neshorn"],
+  "Mat og drikke": ["Sushi","Tacoskjell","Blåskjell","Lasagne","Waffelvafler","Sjokoladefondant","Lakseribbe","Smoothie","Croissant","Guacamole","Brunost","Lefse","Pinnekjøtt","Hummus","Ramen","Tiramisu","Tapioka","Kebab","Falafel","Ceviche"],
+  "Land i verden": ["Brasil","Japan","Canada","Australia","India","Mexico","Argentina","Nigeria","Frankrike","Sør-Korea","Tyrkia","Egypt","Indonesia","Spania","Pakistan","Polen","Ukraina","Iran","Saudi-Arabia","Thailand"],
+  "Historiske hendelser": ["Månelandingen","Berlinmuren faller","WWII","Franskerevolusjonen","Svartedauden","Romertiden","Vikingtiden","Hiroshima","Slaveriet i USA","WWI","Sovjet kollapser","Columbus 1492","Renessansen","Den kalde krigen","Napoleons fall","Oskar-natta 1940","Titanic synker","Stormannens fall","Opplysningstiden","DNA-oppdagelsen"],
+  "Norske steder": ["Lofoten","Nordkapp","Trolltunga","Geirangerfjorden","Hardangervidda","Bryggen i Bergen","Vigelandsparken","Roros","Preikestolen","Ålesund","Flåm","Jostedalbreen","Nærøyfjorden","Stokmarknes","Svalbard","Vesterålen","Jotunheimen","Telemark","Finnmarksvidda","Lillesand"],
+  "Sport": ["Surfing","Freeride ski","E-sport","Klatring","Kampsport","Bocce","Fencing","Badminton","Lacrosse","Sykling","Triatlon","Bobsleigh","Skøyteløp","Skyting","Polo","Langrenn","Snowboard","Parkour","Curling","Roing"],
+  "Idrett": ["Fotball","Håndball","Skisprint","Kombinert","Skiskytting","Friidrett","Svømming","Bryting","Judo","Fekting","Vannpolo","Rulleski","Stup","Sykling på bane","Mangekamp","Høydehopp","Diskos","Kulestøt","Stavhopp","Maraton","Basketball","Rugby","Amerikansk fotball","Cricket","Baseball","Tennis","Golf","Boksing","MMA","Motorsport","Alpint","Kunstløp","Taekwondo","Skyting","Moderne femkamp"],
+  "Filmer": ["Inception","The Dark Knight","Interstellar","Parasite","Forrest Gump","Pulp Fiction","Gladiator","Toy Story","Avengers","Mad Max","The Matrix","La La Land","Titanic","Joker","Fight Club","Leon","Goodfellas","Shutter Island","The Prestige","Her"],
+  "TV-serier": ["Breaking Bad","Game of Thrones","Stranger Things","The Office","Squid Game","The Crown","Peaky Blinders","Narcos","Dark","Succession","Severance","The Wire","Chernobyl","Mare of Easttown","Fleabag","Sherlock","Mindhunter","The Bear","Euphoria","Ozark"],
+  "Musikk / artister": ["Drake","Billie Eilish","BTS","Adele","The Weeknd","Beyoncé","Taylor Swift","Kendrick Lamar","Doja Cat","Ed Sheeran","Harry Styles","Rihanna","Eminem","Arctic Monkeys","Radiohead","Kygo","Aurora","Sigrid","Marcus&Martinus","Alan Walker"],
+  "Videospill": ["Minecraft","Fortnite","Elden Ring","The Last of Us","GTA","Zelda","Red Dead","Hades","Stardew Valley","Among Us","Hollow Knight","God of War","Dark Souls","Cyberpunk 2077","Portal","Overwatch","Valorant","FIFA","Tetris","Pokémon"],
+  "Yrker": ["Astronaut","Kirurg","Diplomat","Arkitekt","Brannmann","Sommelier","Kriminolog","Flygeleder","Havbiolog","Kryptograf","Vinmaker","Tattovør","Parfymør","Sjøkaptein","Jazzmusiker","Geologe","Nødhjelper","Forensiker","Fyrvokter","Kokk"],
+  "Teknologi": ["Kvantecomputer","AI","Blockchain","Romstasjon","Smarttelefon","Satellitt","3D-printer","Dronemapping","Nevralnettverk","Hologram","Solcellepanel","Elektrobil","Chatbot","VR-briller","Biometri","Dataserver","GPS","Bluetooth","Lydbok","Podcast"],
+  "Norske kjendiser": ["Magnus Carlsen","Kygo","Aurora","Sigrid","Erling Haaland","Ylvis","Ada Hegerberg","Martin Ødegaard","Ari Behn","Jan Egeland","Anne B. Ragde","Dag Solstad","Jo Nesbø","Per Fly","Alexander Rybak","Nicolai Tangen","Liv Ullmann","Roald Dahl","Ole E. Antonsen","Siri Hustvedt"],
+  "Emojier / symboler": ["🍕","🐉","🌈","🎭","💀","🔥","🏆","🌊","🎸","👾","🦋","🍄","🎯","🪐","🦁","🌙","⚡","🎪","🧩","🎲"],
+  "Klær og mote": ["Trenchcoat","Turtleneck","Streetwear","Haute couture","Joggebukse","Sneakers","Blazer","Kilt","Sari","Cheongsam","Parka","Bootcut","Anorak","Bustier","Loafers","Kimono","Denim","Espadrilles","Bodysuit","Kaftan"],
+  "Høytider og merkedager": ["Julaften","17. mai","Påske","Karneval","Midsommar","Ramadan","Diwali","Halloween","Nyttårsaften","Valentinsdag","Vintersolverv","Hannukka","Fastelavn","Pinseferie","St. Patricks Day","Eid","Buddhas dag","Sankthans","Himmelfartsdag","Allehelgensaften"],
+  "Norsk slang": ["Sus","Lit","Bæsj","Tjukkas","Dust","Drittsekk","Sjefen","Legende","Monsterbra","Skikkelig kult","Oi da","Baller","Sjenk meg","Sjekk det","Hæ hva","Boffa","Bare rolig","Full guffe","Rå","Tøff som faen"],
+  "Natur og miljø": ["Nordlys","Tidevann","Vulkan","Korallrev","Monsun","Ørken","Permafrost","Tundra","Mangrove","Glasiær","Savanne","Regnskog","Tornado","Bioluminescens","Jordskorpe","Ozonlag","El Niño","Havstrøm","Erosjon","Polnatt"],
+  "Transport": ["Supertog","Luftskip","Hydrofoil","Kabelbane","Segway","Hovercraft","Trikk","Gondol","Monorail","Undergrunnsbane","Elvebåt","Snøscooter","Elfly","Lastebil","Sykkel","Helikopter","Jetski","Zeppelin","Kajakk","Trikkedrager"],
+  "Vitskap og universet": ["Svart hull","Dark matter","Antimaterie","CRISPR","Kvantefysikk","Genredigering","Nevrovitskap","Tidsdilatasjon","Romtid-bølger","Neutron stjerne","Multivers","Fotosyntese","DNA","Kvark","Lysets hastighet","Oksidasjon","CERN","Mitose","Romteleskop","Fusjonskraft"],
+};
+
+// ───────────────────────────────────────────────
+// HINTS — 3 ulike hint per ord, random per runde
+const HINTS = {
+  // Dyr
+  "Isbjørn":["pattedyr i nord","hvit pels","lever på is"],
+  "Sjiraff":["Afrikas høyeste","lang hals","savanne"],
+  "Pingvin":["svart-hvit fugl","kan ikke fly","Sørpolen"],
+  "Krokodille":["reptil med tenner","ferskvann","farlig"],
+  "Elefant":["snabel","stor og grå","lever i flokk"],
+  "Flamingo":["rosa fugl","ett bein","saltsjø"],
+  "Gorilla":["stor ape","jungel","primat"],
+  "Ørn":["rovfugl","store vinger","skarpe klør"],
+  "Hai":["finner","havet","rovfisk"],
+  "Kamel":["pukkel","ørkendyr","tørste lenge"],
+  "Manet":["gjennomsiktig","tentakler","havet"],
+  "Oter":["spiser fisk","leker i vann","søt pels"],
+  "Pelikaner":["stort nebb","kystfugl","fanger fisk"],
+  "Rev":["rød pels","listig","skogen"],
+  "Sebra":["striper","ligner hest","Afrika"],
+  "Ulv":["uler","flokk","rovdyr"],
+  "Bever":["gnager trær","bygger demninger","Canada"],
+  "Flodhest":["elv","veldig tung","farlig"],
+  "Koala":["pungdyr","Australia","sover mye"],
+  "Neshorn":["horn i panna","tykk hud","truet art"],
+  // Mat og drikke
+  "Sushi":["japansk","rå fisk","nori og ris"],
+  "Tacoskjell":["meksikansk","sprøtt skall","kjøtt og salsa"],
+  "Blåskjell":["sjømat","blå skall","hvitvin"],
+  "Lasagne":["italiensk","lag på lag","bakt i ovn"],
+  "Waffelvafler":["hjerteform","søndagsmat","rømme og syltetøy"],
+  "Sjokoladefondant":["flytende inni","sjokolade","varm dessert"],
+  "Lakseribbe":["norsk fisk","fet og god","grillet"],
+  "Smoothie":["blender","frukt","drikke"],
+  "Croissant":["butterdeig","fransk","bakeri"],
+  "Guacamole":["avokado","grønn dip","meksikansk"],
+  "Brunost":["norsk","brun og søt","på brødet"],
+  "Lefse":["norsk flatbrød","potet","smør og sukker"],
+  "Pinnekjøtt":["norsk julemat","lam","dampet"],
+  "Hummus":["kikert","dip","pitabrød"],
+  "Ramen":["japansk suppe","nudler","buljong"],
+  "Tiramisu":["italiensk dessert","espresso","mascarpone"],
+  "Tapioka":["bobleperler","søt drikk","kassava"],
+  "Kebab":["grillet kjøtt","tyrkisk","spyd"],
+  "Falafel":["stekt kikert","pita","midtøsten"],
+  "Ceviche":["rå fisk i sitrus","Peru","kald rett"],
+  // Land i verden
+  "Brasil":["karneval","Amazonas","samba"],
+  "Japan":["kirsebærblomst","sushi","øystat"],
+  "Canada":["ahornsirup","grense USA","Commonwealth"],
+  "Australia":["kenguru","Great Barrier Reef","cricket"],
+  "India":["krydder","Taj Mahal","milliard innbyggere"],
+  "Mexico":["tacos","aztekere","tequila"],
+  "Argentina":["tango","Andes","Messi"],
+  "Nigeria":["Afrikas mest folkerike","Lagos","olje"],
+  "Frankrike":["Eiffeltårnet","vin og ost","baguette"],
+  "Sør-Korea":["K-pop","Samsung","halvøy"],
+  "Tyrkia":["mellom Europa og Asia","kebab","halvmåne"],
+  "Egypt":["pyramidene","Nilen","faraoner"],
+  "Indonesia":["øystat","Bali","ring of fire"],
+  "Spania":["flamenco","sol","Real Madrid"],
+  "Pakistan":["nabo til India","cricket","fem elver"],
+  "Polen":["øst-Europa","vodka","Vistulaelven"],
+  "Ukraina":["solsikke","blå-gult flagg","Dnepr"],
+  "Iran":["persia","Teheran","teppe"],
+  "Saudi-Arabia":["Mekka","ørken","olje"],
+  "Thailand":["tempel","tuk-tuk","Bangkok"],
+  // Historiske hendelser
+  "Månelandingen":["1969","Neil Armstrong","Apollo 11"],
+  "Berlinmuren faller":["1989","DDR","checkpoint"],
+  "WWII":["1939–1945","Hitler","D-Day"],
+  "Franskerevolusjonen":["1789","Bastillen","guillotine"],
+  "Svartedauden":["pest","1347","en tredjedel"],
+  "Romertiden":["Caesar","legion","SPQR"],
+  "Vikingtiden":["longship","Norsemen","800-1066"],
+  "Hiroshima":["atombombe","1945","Japan"],
+  "Slaveriet i USA":["plantasje","borgerkrig","frigjøring"],
+  "WWI":["skyttergraver","1914–1918","Sarajevo"],
+  "Sovjet kollapser":["1991","Gorbatsjov","jerngardin"],
+  "Columbus 1492":["Amerika","Santa María","Spania"],
+  "Renessansen":["Firenze","da Vinci","humanisme"],
+  "Den kalde krigen":["USA vs. Sovjet","atomkrig","jernteppe"],
+  "Napoleons fall":["Waterloo","eksil","koalisjonen"],
+  "Oskar-natta 1940":["9. april","tyske skip","Oslo havn"],
+  "Titanic synker":["isfjell","1912","RMS"],
+  "Stormannens fall":["Romerriket","476","Vestrom"],
+  "Opplysningstiden":["fornuft","1700-tallet","Voltaire"],
+  "DNA-oppdagelsen":["Watson og Crick","1953","dobbel helix"],
+  // Norske steder
+  "Lofoten":["fiskevær","tørrfisk","nordlys"],
+  "Nordkapp":["verdens nordligste","klippe","midnattssol"],
+  "Trolltunga":["klippe som stikker ut","Hardanger","populær tur"],
+  "Geirangerfjorden":["verdensarv","fossene","møre"],
+  "Hardangervidda":["vidde","reinsdyr","nasjonalpark"],
+  "Bryggen i Bergen":["fargerike hus","verdensarv","hanseatisk"],
+  "Vigelandsparken":["skulptur","Oslo","Sinnataggen"],
+  "Roros":["gammel gruveby","verdensarv","trehus"],
+  "Preikestolen":["klippe over fjorden","Rogaland","populær vandring"],
+  "Ålesund":["jugendstil","kystby","møre"],
+  "Flåm":["Flåmsbana","fjord","Aurland"],
+  "Jostedalbreen":["Norges største isbre","blå is","Sogn"],
+  "Nærøyfjorden":["smal fjord","verdensarv","vestlandet"],
+  "Stokmarknes":["Hurtigruten","Vesterålen","kystby"],
+  "Svalbard":["isbjørn","78°N","permafrost"],
+  "Vesterålen":["hvalsafari","nord-Norge","fiskevær"],
+  "Jotunheimen":["Galdhøpiggen","høyfjell","nasjonalpark"],
+  "Telemark":["Gaustatoppen","kanalrute","ski"],
+  "Finnmarksvidda":["reinsdyr","samisk","Kautokeino"],
+  "Lillesand":["hvite hus","Sørlandet","sommerferie"],
+  // Sport
+  "Surfing":["bølger","brett","Hawaii"],
+  "Freeride ski":["off-piste","bratt","heliski"],
+  "E-sport":["dataspill","turneringer","LAN"],
+  "Klatring":["vegg","kalk","buldring"],
+  "Kampsport":["slag og spark","belte","dojo"],
+  "Bocce":["kaste kuler","italiensk","grusplass"],
+  "Fencing":["florett","touché","maske"],
+  "Badminton":["fjærball","ketsjersport","hallen"],
+  "Lacrosse":["nettbat","nordamerikansk","hurtig"],
+  "Sykling":["pedaler","Tour de France","hjul"],
+  "Triatlon":["tre grener","svøm-sykkel-løp","ironman"],
+  "Bobsleigh":["isbane","høy fart","olympisk"],
+  "Skøyteløp":["is","oval bane","hurtig"],
+  "Skyting":["rifle","mål","stille sport"],
+  "Polo":["hest","kølle","aristokratisk"],
+  "Langrenn":["staver","skispor","norsk"],
+  "Snowboard":["brett","halfpipe","freestyle"],
+  "Parkour":["hoppe over vegger","by","fri løping"],
+  "Curling":["kost","stein","is"],
+  "Roing":["årer","båt","samarbeid"],
+  // Idrett
+  "Fotball":["elleve mot elleve","offside","VAR"],
+  "Håndball":["syvmeter","seks mot seks","EHF"],
+  "Skisprint":["kvartfinale","freestyle","sprint"],
+  "Kombinert":["bakke og langrenn","Gundersen","Riiber"],
+  "Skiskytting":["strafferunde","liggende og stående","biathlon"],
+  "Friidrett":["spikersko","løp og hopp","stadion"],
+  "Svømming":["crawl","basseng","tidtaking"],
+  "Bryting":["matte","grep","greco-romansk"],
+  "Judo":["ippon","judogi","kast"],
+  "Fekting":["touché","florett","épée"],
+  "Vannpolo":["basseng","ball","syv spillere"],
+  "Rulleski":["stav","sommer","klassisk og skøyting"],
+  "Stup":["plattform","innslagsvinkel","synkron"],
+  "Sykling på bane":["velodrom","keirin","banesykkel"],
+  "Mangekamp":["tikamp","sjukamp","kombinert"],
+  "Høydehopp":["Fosbury Flop","lista","hoppe over"],
+  "Diskos":["kasteskive","rotasjon","atletikk"],
+  "Kulestøt":["tung kule","skyve","atletikk"],
+  "Stavhopp":["karbonstav","hoppe over lista","fristil"],
+  "Maraton":["42 km","Kipchoge","lange distanser"],
+  "Basketball":["kurv","NBA","dribling"],
+  "Rugby":["oval ball","scrum","All Blacks"],
+  "Amerikansk fotball":["touchdown","Super Bowl","quarterback"],
+  "Cricket":["wicket","bat","England vs. Australia"],
+  "Baseball":["home run","pitcher","ni innings"],
+  "Tennis":["grand slam","deuce","Wimbledon"],
+  "Golf":["birdie","hull","driver"],
+  "Boksing":["KO","hansker","ring"],
+  "MMA":["octagon","UFC","blandede kampteknikker"],
+  "Motorsport":["pitstop","Formel 1","pole position"],
+  "Alpint":["slalåm","utfor","porter"],
+  "Kunstløp":["is","axel","hopp og spinn"],
+  "Taekwondo":["spark","Korea","OL-sport"],
+  "Moderne femkamp":["fem øvelser","laser-run","riddersport"],
+  // Filmer
+  "Inception":["drøm i drøm","Leo DiCaprio","snurretoll"],
+  "The Dark Knight":["Batman","Jokeren","Gotham"],
+  "Interstellar":["romhull","tidsdilatasjon","far og datter"],
+  "Parasite":["rik og fattig","Sør-Korea","Oscar"],
+  "Forrest Gump":["jeg løper bare","Tom Hanks","sjokoladeboks"],
+  "Pulp Fiction":["Tarantino","kofferten","Uma Thurman"],
+  "Gladiator":["Colosseum","Russell Crowe","Maximus"],
+  "Toy Story":["Buzz og Woody","leketøy","Pixar"],
+  "Avengers":["superhelt","Thanos","Marvel"],
+  "Mad Max":["postapokalypse","bilslaging","ørken"],
+  "The Matrix":["rød pille","Neo","simulert verden"],
+  "La La Land":["musikal","Ryan Gosling","LA"],
+  "Titanic":["skip synker","Jack og Rose","Leo DiCaprio"],
+  "Joker":["sminke","Joaquin Phoenix","Batman-skurk"],
+  "Fight Club":["første regel","Brad Pitt","twist på slutten"],
+  "Leon":["leiemorder","Natalie Portman","planten"],
+  "Goodfellas":["mafia","Ray Liotta","Scorsese"],
+  "Shutter Island":["psykiatrisk","Leo DiCaprio","twist"],
+  "The Prestige":["tryllekunst","to menn","hemmeligheten"],
+  "Her":["stemme","AI-kjærlighet","Scarlett Johansson"],
+  // TV-serier
+  "Breaking Bad":["kjemilærer","Walter White","meth"],
+  "Game of Thrones":["drage","jerntronen","vinter kommer"],
+  "Stranger Things":["Opp-ned verdenen","Eleven","Hawkins"],
+  "The Office":["kontor","Michael Scott","mockumentary"],
+  "Squid Game":["leker på liv og død","grønn dress","Korea"],
+  "The Crown":["dronning Elizabeth","Netflix","britisk"],
+  "Peaky Blinders":["Tommy Shelby","Birmingham","flat cap"],
+  "Narcos":["Pablo Escobar","Colombia","kartell"],
+  "Dark":["tidreise","tysk","tre generasjoner"],
+  "Succession":["rik mediafamilie","Roy","arv og makt"],
+  "Severance":["delt hukommelse","kontor","Lumon"],
+  "The Wire":["Baltimore","politi","HBO"],
+  "Chernobyl":["atomkraft","Sovjet","HBO"],
+  "Mare of Easttown":["Kate Winslet","mord","Pennsylvania"],
+  "Fleabag":["fjerde vegg","britisk","Phoebe Waller-Bridge"],
+  "Sherlock":["Benedict Cumberbatch","London","detektiv"],
+  "Mindhunter":["FBI","seriemordere","70-tallet"],
+  "The Bear":["restaurant","stress","kjøkken"],
+  "Euphoria":["tenåringer","Zendaya","glitter og rus"],
+  "Ozark":["pengevask","Missouri","Jason Bateman"],
+  // Musikk / artister
+  "Drake":["Toronto","rap","OVO"],
+  "Billie Eilish":["hviskende","Bad Guy","ung"],
+  "BTS":["K-pop","sju gutter","ARMY"],
+  "Adele":["britisk","kraftig stemme","Hello"],
+  "The Weeknd":["Blinding Lights","mørk R&B","Abel"],
+  "Beyoncé":["Lemonade","dronning","Destiny's Child"],
+  "Taylor Swift":["era-bytter","Swifties","kjærlighet"],
+  "Kendrick Lamar":["Compton","rap","Pulitzer"],
+  "Doja Cat":["Planet Her","rap og pop","katt"],
+  "Ed Sheeran":["rødt hår","gitar","Shape of You"],
+  "Harry Styles":["One Direction","moteikon","As It Was"],
+  "Rihanna":["Barbados","Umbrella","Fenty"],
+  "Eminem":["Detroit","rask rapper","Slim Shady"],
+  "Arctic Monkeys":["Sheffield","britisk rock","Do I Wanna Know"],
+  "Radiohead":["Creep","eksperimentell","Thom Yorke"],
+  "Kygo":["norsk DJ","tropical house","Ola Eldøy"],
+  "Aurora":["norsk","mystisk stemme","Running with the Wolves"],
+  "Sigrid":["Ålesund","norsk pop","Sucker Punch"],
+  "Marcus&Martinus":["norske tvillinger","ungdomsidoler","Gjøvik"],
+  "Alan Walker":["maske","norsk DJ","Faded"],
+  // Videospill
+  "Minecraft":["blokker","creeper","bygge fritt"],
+  "Fortnite":["battle royale","storm","bygg vegger"],
+  "Elden Ring":["svært vanskelig","boss","åpen verden"],
+  "The Last of Us":["sopp-infeksjon","Joel og Ellie","postapokalyptisk"],
+  "GTA":["åpen verden","stjel biler","Rockstar"],
+  "Zelda":["Link","Hyrule","Master Sword"],
+  "Red Dead":["cowboy","Arthur Morgan","villvest"],
+  "Hades":["gresk mytologi","roguelite","rømme fra underverdenen"],
+  "Stardew Valley":["gård","piksel","avslappende"],
+  "Among Us":["finn impostoren","romskip","sus"],
+  "Hollow Knight":["insekt","under bakken","vanskelig"],
+  "God of War":["Kratos","øks","nordisk mytologi"],
+  "Dark Souls":["You Died","bonfire","mørk middelalder"],
+  "Cyberpunk 2077":["Night City","neon","V"],
+  "Portal":["portaler","GLaDOS","tenk deg ut"],
+  "Overwatch":["lag","helter","ultimate"],
+  "Valorant":["agenter","spike","skytespill"],
+  "FIFA":["fotball","Ultimate Team","EA"],
+  "Tetris":["klosser faller","fyll linjer","klassiker"],
+  "Pokémon":["Pikachu","samle dem alle","Pokédex"],
+  // Yrker
+  "Astronaut":["romdrakt","vektløs","romstasjonen"],
+  "Kirurg":["opererer","skalpell","sykehus"],
+  "Diplomat":["ambassade","forhandler","utenrikstjeneste"],
+  "Arkitekt":["tegner bygninger","plan og snitt","bygge"],
+  "Brannmann":["slukker branner","røykdykker","brannbil"],
+  "Sommelier":["vin","restauranten","smak og duft"],
+  "Kriminolog":["studerer kriminalitet","ikke politiet","årsak og virkning"],
+  "Flygeleder":["styrer fly","tårn","radar"],
+  "Havbiolog":["havet","forsker","dykker"],
+  "Kryptograf":["koder","nøkler","sikkerhet"],
+  "Vinmaker":["drue","gjæring","kjeller"],
+  "Tattovør":["nål","blekk","permanent"],
+  "Parfymør":["duft","nesen er verktøyet","Grasse"],
+  "Sjøkaptein":["skip","ror","havn"],
+  "Jazzmusiker":["improvisasjon","trompet","klubb"],
+  "Geologe":["stein","berggrunn","kart og hammer"],
+  "Nødhjelper":["krise","nødhjelp","Røde Kors"],
+  "Forensiker":["åsted","bevis","rettsmedisin"],
+  "Fyrvokter":["fyrlykten","hav","ensom"],
+  "Kokk":["restaurantkjøkken","mise en place","Michelin"],
+  // Teknologi
+  "Kvantecomputer":["qubit","ekstremt rask","kjølt ned"],
+  "AI":["maskinlæring","ChatGPT","trenes på data"],
+  "Blockchain":["krypto","desentralisert","kjede"],
+  "Romstasjon":["ISS","vektløs","astronauter bor der"],
+  "Smarttelefon":["lomme","touchskjerm","apper"],
+  "Satellitt":["bane rundt jorda","GPS","rakett"],
+  "3D-printer":["lag på lag","plast","hjemmelaget"],
+  "Dronemapping":["kamera i luften","kart","UAV"],
+  "Nevralnettverk":["inspirert av hjernen","AI","dype lag"],
+  "Hologram":["3D-bilde","lys","Tupac på Coachella"],
+  "Solcellepanel":["sollys til strøm","tak","grønn energi"],
+  "Elektrobil":["lading","ingen avgass","Tesla"],
+  "Chatbot":["svarer automatisk","tekst","kundeservice"],
+  "VR-briller":["virtuell virkelighet","headset","Meta"],
+  "Biometri":["fingeravtrykk","låse opp","unikt mønster"],
+  "Dataserver":["lagrer data","blinkende lys","kjølerom"],
+  "GPS":["navigasjon","posisjon","satellitt"],
+  "Bluetooth":["trådløs","hodetelefoner","kort rekkevidde"],
+  "Lydbok":["lese med ørene","Audible","lange kjøreturer"],
+  "Podcast":["lydprogram","episoder","Spotify"],
+  // Norske kjendiser
+  "Magnus Carlsen":["sjakk","verdensmester","Tønsberg"],
+  "Kygo":["DJ","tropical house","norsk"],
+  "Aurora":["mystisk pop","norsk","Running with the Wolves"],
+  "Sigrid":["norsk pop","Ålesund","Sucker Punch"],
+  "Erling Haaland":["Manchester City","scorer mål","norsk"],
+  "Ylvis":["What Does the Fox Say","komiker","TV-show"],
+  "Ada Hegerberg":["Ballon d'Or","Lyon","norsk fotball"],
+  "Martin Ødegaard":["Arsenal","kaptein","norsk"],
+  "Ari Behn":["forfatter","kongefamilien","tragisk"],
+  "Jan Egeland":["FN","diplomat","fredsmekler"],
+  "Anne B. Ragde":["Berlinerpoplene","norsk roman","forfatterinne"],
+  "Dag Solstad":["Skam","norsk klassiker","forfatter"],
+  "Jo Nesbø":["Harry Hole","krimikonge","også rockemusiker"],
+  "Per Fly":["norsk regissør","Trilogien","film"],
+  "Alexander Rybak":["Eurovision","fiolinist","Fairytale"],
+  "Nicolai Tangen":["Oljefondet","sjef","milliardær"],
+  "Liv Ullmann":["skuespiller","Bergman","norsk"],
+  "Roald Dahl":["Matilda","Charlie","norsk-britisk forfatter"],
+  "Ole E. Antonsen":["trompet","klassisk","solist"],
+  "Siri Hustvedt":["forfatter","New York","gift med Paul Auster"],
+  // Emojier / symboler
+  "🍕":["Italia","rund mat","ost og tomat"],
+  "🐉":["puster ild","mytisk","eventyr"],
+  "🌈":["etter regn","syv farger","lys gjennom vann"],
+  "🎭":["teater","to masker","komedie og tragedie"],
+  "💀":["skjelett","Halloween","fareskilt"],
+  "🔥":["varmt","brenner","populær ting"],
+  "🏆":["vinner","gullpokal","første plass"],
+  "🌊":["havet","bølger","surfing"],
+  "🎸":["rock","strenger","gitarsolo"],
+  "👾":["piksel","arkadespill","Space Invaders"],
+  "🦋":["vinge","metamorfose","blomster"],
+  "🍄":["sopp","skog","Mario"],
+  "🎯":["blink","pil og bue","treffe mål"],
+  "🪐":["ringer","Saturn","solsystemet"],
+  "🦁":["manke","løve","Afrika"],
+  "🌙":["nattehimmel","halvmåne","mørkt"],
+  "⚡":["lyn","rask","elektrisk"],
+  "🎪":["sirkus","telt","akrobater"],
+  "🧩":["puslespill","biter","løse gåter"],
+  "🎲":["terning","tilfeldighet","brettspill"],
+  // Klær og mote
+  "Trenchcoat":["lang frakk","regn","detektiv-look"],
+  "Turtleneck":["høy hals","Steve Jobs","vinter"],
+  "Streetwear":["gateklær","Supreme","sneakers-kultur"],
+  "Haute couture":["skreddersydd luksus","Paris","aldri i vanlig butikk"],
+  "Joggebukse":["elastisk","komfort","sofaen"],
+  "Sneakers":["gummibunn","Nike","samles på"],
+  "Blazer":["strukturert jakke","kontor","med eller uten slips"],
+  "Kilt":["skotsk","mann i skjørt","tartan"],
+  "Sari":["India","rundt kroppen","fargerik"],
+  "Cheongsam":["kinesisk kjole","høy splitt","Shanghai"],
+  "Parka":["varm vinterjakke","hette","militær-stil"],
+  "Bootcut":["utsvart bunn","jeans","70-tallet"],
+  "Anorak":["vindtett","friluftsliv","kapuye"],
+  "Bustier":["strammet inn","gammeldags","korsett"],
+  "Loafers":["slip-on sko","ingen snøring","klassisk"],
+  "Kimono":["Japan","vidt erme","belte i midjen"],
+  "Denim":["jeans-stoff","blått","slitesterkt"],
+  "Espadrilles":["stråsåle","sommer","Middelhav"],
+  "Bodysuit":["tett festende","yoga eller fest","ett plagg"],
+  "Kaftan":["løst og flytende","nordafrikansk","strand"],
+  // Høytider og merkedager
+  "Julaften":["24. desember","gaver","julenissen"],
+  "17. mai":["nasjonaldagen","flagg","is og pølse"],
+  "Påske":["egg","fjelltur","appelsin"],
+  "Karneval":["masker og kostyme","Rio","før fasten"],
+  "Midsommar":["kranser","bål","svensk"],
+  "Ramadan":["faste","solnedgang","muslimsk"],
+  "Diwali":["lysfestivalen","hinduistisk","fyrverkeri"],
+  "Halloween":["gresskar","kostyme","godbit eller lureri"],
+  "Nyttårsaften":["champagne","31. desember","fyrverkeri"],
+  "Valentinsdag":["14. februar","kjærlighet","hjerter"],
+  "Vintersolverv":["korteste dag","21. desember","mørkt"],
+  "Hannukka":["åtte lys","jødisk","dreidel"],
+  "Fastelavn":["boller med krem","barn i kostyme","ris"],
+  "Pinseferie":["kristen høytid","femti dager etter påske","langhelg"],
+  "St. Patricks Day":["grønn kløver","irsk","øl og parader"],
+  "Eid":["feiring etter Ramadan","familie og mat","nye klær"],
+  "Buddhas dag":["Vesak","tempel","buddhisme"],
+  "Sankthans":["midsommerbål","23. juni","norsk"],
+  "Himmelfartsdag":["Kristus steg opp","langhelg","40 dager etter påske"],
+  "Allehelgensaften":["minne de døde","lys","1. november"],
+  // Norsk slang
+  "Sus":["godkjent","blant unge","ros"],
+  "Lit":["kult","fest","ungdomsslang"],
+  "Bæsj":["barnlig","toalett","komisk"],
+  "Tjukkas":["stor person","ikke pent","beskrivende"],
+  "Dust":["dum person","mild fornærmelse","noe dumt"],
+  "Drittsekk":["sterk fornærmelse","slem person","sint"],
+  "Sjefen":["respekt eller ironi","lederen","nikk"],
+  "Legende":["ikonisk person","ros","du er en…"],
+  "Monsterbra":["veldig bra","overdrivelse","entusiasme"],
+  "Skikkelig kult":["genuint positivt","imponerende","ekte ros"],
+  "Oi da":["overraskelse","nordnorsk","mild sjokk"],
+  "Baller":["modig","tøff","rosende"],
+  "Sjenk meg":["gi meg å drikke","vest-norsk","beordre"],
+  "Sjekk det":["se der","vis frem","kult oppdaget"],
+  "Hæ hva":["forvirret","norsk meme","ikke forstod"],
+  "Boffa":["kysse","date","ungdomsslang"],
+  "Bare rolig":["ingen stress","avslappet","beroligende"],
+  "Full guffe":["maks hastighet","fullt gass","alt eller ingenting"],
+  "Rå":["imponerende","tøff","norsk for kult"],
+  "Tøff som faen":["veldig tøff","sterk ros","imponerende"],
+  // Natur og miljø
+  "Nordlys":["grønn himmel","sol-partikler","arktisk"],
+  "Tidevann":["havet stiger og synker","månen","to ganger om dagen"],
+  "Vulkan":["lava","aske","eksploderer"],
+  "Korallrev":["fargerikt under vann","fisk","trues av klimaet"],
+  "Monsun":["ekstremregn","Asia","årstid"],
+  "Ørken":["sand","lite regn","varmt på dagen"],
+  "Permafrost":["alltid frossent jord","Arktis","smelter"],
+  "Tundra":["flatt og kaldt","lav vegetasjon","nord"],
+  "Mangrove":["røtter i vann","tropisk kyst","storm-beskyttelse"],
+  "Glasiær":["isbre","smelter","fjord-former"],
+  "Savanne":["gress og spredte trær","Afrika","løver"],
+  "Regnskog":["fuktig","Amazonas","lungene til jorda"],
+  "Tornado":["roterende vind","svart trakt","USA"],
+  "Bioluminescens":["havet lyser","levende ting","magisk"],
+  "Jordskorpe":["ytterste lag","tektoniske plater","beveger seg"],
+  "Ozonlag":["beskytter mot UV","atmosfæren","hull over Antarktis"],
+  "El Niño":["varm havstrøm","globalt klima","Stillehavet"],
+  "Havstrøm":["vann i bevegelse","Golfstrømmen","klima"],
+  "Erosjon":["jord og stein brytes ned","vind og vann","Grand Canyon"],
+  "Polnatt":["ingen sol i ukevis","Svalbard","mørketid"],
+  // Transport
+  "Supertog":["svever over sporet","Japan","300+ km/t"],
+  "Luftskip":["ballong med motor","Hindenburg","sakte og stor"],
+  "Hydrofoil":["løfter seg over vannet","rask båt","vinger"],
+  "Kabelbane":["kabel trekker","fjelltopp","gondolstol"],
+  "Segway":["to hjul","balanse","turistattraksjon"],
+  "Hovercraft":["luftpute","over vann og land","militær"],
+  "Trikk":["skinner","by","elektrisk"],
+  "Gondol":["Venezia","stake deg frem","romantisk"],
+  "Monorail":["ett spor","flyplass","futuristisk"],
+  "Undergrunnsbane":["T-bane","under bakken","by"],
+  "Elvebåt":["langs elva","langsom","turisme"],
+  "Snøscooter":["motor på snø","Finnmark","norsk"],
+  "Elfly":["stille fly","kort distanse","fremtiden"],
+  "Lastebil":["gods","sjåfør","trailer"],
+  "Sykkel":["to hjul","pedaler","miljøvennlig"],
+  "Helikopter":["rotor","sveve","luftambulanse"],
+  "Jetski":["vannskuter","bølger","sommer"],
+  "Zeppelin":["hydrogen","brenner","100 år gammelt"],
+  "Kajakk":["padling","sjø og elv","sport"],
+  "Trikkedrager":["C-130","Luftforsvaret","norsk fly"],
+  // Vitskap og universet
+  "Svart hull":["ingen kan rømme","uendelig tetthet","sentrum av galakser"],
+  "Dark matter":["usynlig","holder galakser samlet","kan ikke måles direkte"],
+  "Antimaterie":["motsetning til materie","annihilerer","brukes i medisin"],
+  "CRISPR":["gen-saks","redigerer DNA","medisinsk revolusjon"],
+  "Kvantefysikk":["partikkel og bølge","Schrödinger","usikkerhetsprinsippet"],
+  "Genredigering":["endre DNA","CRISPR","medisinens fremtid"],
+  "Nevrovitskap":["hjernen","nevroner","kognisjon"],
+  "Tidsdilatasjon":["tid går saktere nær tyngde","Einstein","relativitet"],
+  "Romtid-bølger":["rystelser i universet","oppdaget 2015","LIGO"],
+  "CERN":["ring under bakken","partikler","Higgs-bosonet"],
+  "Multivers":["parallelle verdener","sci-fi","mange-verdener"],
+  "Fotosyntese":["planter lager mat","sollys","klorofyll"],
+  "DNA":["dobbel helix","gen-koden","unikt per individ"],
+  "Kvark":["byggestein i atomer","aldri alene","seks typer"],
+  "Lysets hastighet":["300 000 km/s","raskeste grense","c"],
+  "Oksidasjon":["rust på jern","oksygen","forbrenning"],
+  "Mitose":["celle deler seg","vekst og heling","kjerne kopieres"],
+  "Romteleskop":["James Webb","over atmosfæren","ser langt tilbake"],
+  "Fusjonskraft":["sol-energi på jorda","ITER","ren energi"],
+};
+
+// ───────────────────────────────────────────────
+// STATE
+// ───────────────────────────────────────────────
+let impostorCount = 1;
+let players = [];
+let gameData = { players: [], currentIndex: 0, word: '', impostors: [] };
+
+// ───────────────────────────────────────────────
+// SCREEN NAV
+// ───────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+// ───────────────────────────────────────────────
+// SETUP
+// ───────────────────────────────────────────────
+function changeImpostors(delta) {
+  impostorCount = Math.max(1, Math.min(3, impostorCount + delta));
+  document.getElementById('impostor-count').textContent = impostorCount;
+}
+
+function addPlayerField(name = '') {
+  const list = document.getElementById('player-list');
+  const row = document.createElement('div');
+  row.className = 'player-row';
+  row.innerHTML = `
+    <input class="player-input" type="text" placeholder="Navn..." value="${name}" maxlength="20" inputmode="text" autocomplete="off">
+    <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+  `;
+  list.appendChild(row);
+  // Focus last input
+  setTimeout(() => row.querySelector('input').focus(), 50);
+}
+
+function initSetup() {
+  const list = document.getElementById('player-list');
+  list.innerHTML = '';
+  ['','','',''].forEach(n => addPlayerField(n));
+}
+
+function startGame() {
+  const inputs = document.querySelectorAll('.player-input');
+  players = [];
+  inputs.forEach(inp => {
+    const v = inp.value.trim();
+    if (v) players.push(v);
+  });
+
+  const err = document.getElementById('setup-error');
+  if (players.length < 2) { err.textContent = 'Legg til minst 2 spillere.'; return; }
+  if (impostorCount >= players.length) { err.textContent = 'For mange impostorer.'; return; }
+  err.textContent = '';
+
+  // Pick random category and word
+  const cats = Object.keys(CATEGORIES);
+  const cat = cats[Math.floor(Math.random() * cats.length)];
+  const words = CATEGORIES[cat];
+  const word = words[Math.floor(Math.random() * words.length)];
+
+  // Pick impostors randomly
+  const shuffled = [...players].sort(() => Math.random() - 0.5);
+  const impostors = shuffled.slice(0, impostorCount);
+
+  // Shuffle player order
+  const order = [...players].sort(() => Math.random() - 0.5);
+
+  // Each impostor gets a random unique hint index, reshuffled every round
+  const hintPool = [0,1,2].sort(() => Math.random() - 0.5);
+  const impostorHints = {};
+  impostors.forEach((name, i) => { impostorHints[name] = hintPool[i % 3]; });
+  gameData = { players: order, currentIndex: 0, word, impostors, category: cat, impostorHints };
+  renderCard();
+  showScreen('round');
+}
+
+// ───────────────────────────────────────────────
+// CARD REVEAL
+// ───────────────────────────────────────────────
+function renderCard() {
+  const { players, currentIndex, word, impostors } = gameData;
+  const player = players[currentIndex];
+  const isImpostor = impostors.includes(player);
+
+  document.getElementById('round-progress').textContent =
+    `Spiller ${currentIndex + 1} av ${players.length}`;
+  document.getElementById('round-name').textContent = player;
+
+  const card = document.getElementById('hold-card');
+  card.className = 'hold-card hidden';
+
+  const badge = document.getElementById('card-role-badge');
+  const wordEl = document.getElementById('card-word');
+  const subEl = document.getElementById('card-subtext');
+
+  if (isImpostor) {
+    card.dataset.role = 'impostor';
+    badge.textContent = 'IMPOSTOR';
+    wordEl.textContent = '???';
+    const hints = HINTS[gameData.word] || ["hint"];const hintIdx = gameData.impostorHints[player] ?? 0;const hint = hints[hintIdx % hints.length];
+    subEl.textContent = `Hint: "${hint}"`;
+  } else {
+    card.dataset.role = 'friendly';
+    badge.textContent = 'VENN';
+    wordEl.textContent = word;
+    subEl.textContent = 'Gi hint uten å si ordet!';
+  }
+
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('done-btn').style.display = 'none';
+  card.dataset.revealed = 'false';
+}
+
+function revealCard() {
+  const card = document.getElementById('hold-card');
+  const role = card.dataset.role;
+  card.classList.remove('hidden', 'pressing');
+  card.classList.add('revealed', role);
+
+  const isLast = gameData.currentIndex === gameData.players.length - 1;
+  if (isLast) {
+    document.getElementById('done-btn').style.display = 'block';
+  } else {
+    document.getElementById('next-btn').style.display = 'block';
+  }
+}
+
+function nextPlayer() {
+  gameData.currentIndex++;
+  renderCard();
+}
+
+function showSummary() {
+  const { impostors, word, category } = gameData;
+
+  const revealDiv = document.getElementById('impostors-reveal');
+  revealDiv.innerHTML = `<h3>Impostorer</h3>`;
+  impostors.forEach(name => {
+    revealDiv.innerHTML += `
+      <div class="impostor-name-item">
+        <div class="impostor-dot"></div>
+        <div class="impostor-name-val">${name}</div>
+      </div>`;
+  });
+
+  document.getElementById('word-reveal').innerHTML = `
+    <div class="word-reveal-label">Hemmelig ord</div>
+    <div class="word-reveal-word">${word}</div>
+  `;
+
+  showScreen('done');
+}
+
+function newRound() {
+  // Same players, new word + impostors
+  const cats = Object.keys(CATEGORIES);
+  const cat = cats[Math.floor(Math.random() * cats.length)];
+  const words = CATEGORIES[cat];
+  const word = words[Math.floor(Math.random() * words.length)];
+
+  const shuffled = [...gameData.players].sort(() => Math.random() - 0.5);
+  const impostors = shuffled.slice(0, impostorCount);
+  const order = [...gameData.players].sort(() => Math.random() - 0.5);
+
+  gameData = { ...gameData, players: order, currentIndex: 0, word, impostors, category: cat };
+  renderCard();
+  showScreen('round');
+}
+
+// ───────────────────────────────────────────────
+// PRESS MECHANIC — instant reveal on press, hide on release
+// ───────────────────────────────────────────────
+function startHold(e) {
+  e.preventDefault();
+  const card = document.getElementById('hold-card');
+  const role = card.dataset.role;
+  card.classList.remove('hidden');
+  card.classList.add('revealed', role);
+}
+
+function endHold(e) {
+  e.preventDefault();
+  const card = document.getElementById('hold-card');
+  const role = card.dataset.role;
+
+  // Hide card again
+  card.classList.remove('revealed', 'friendly', 'impostor');
+  card.classList.add('hidden');
+
+  // Show next/done button after they've seen their card
+  if (card.dataset.revealed !== 'true') {
+    card.dataset.revealed = 'true';
+    const isLast = gameData.currentIndex === gameData.players.length - 1;
+    if (isLast) {
+      document.getElementById('done-btn').style.display = 'block';
+    } else {
+      document.getElementById('next-btn').style.display = 'block';
+    }
+  }
+}
+
+function revealCard() {}
+function resetProgressArc() {}
+
+// ───────────────────────────────────────────────
+// INIT
+// ───────────────────────────────────────────────
+initSetup();
+</script>
+</body>
+</html>
