@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Lint & test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect project type
+        id: detect
+        shell: bash
+        run: |
+          if [ -f package.json ]; then echo "node=true" >> "$GITHUB_OUTPUT"; else echo "node=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -f requirements.txt ] || [ -f pyproject.toml ] || [ -f setup.py ]; then echo "python=true" >> "$GITHUB_OUTPUT"; else echo "python=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Setup Node
+        if: steps.detect.outputs.node == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        if: steps.detect.outputs.node == 'true'
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then npm ci || npm install; else npm install; fi
+
+      - name: Run Node lint
+        if: steps.detect.outputs.node == 'true'
+        shell: bash
+        run: npm run lint --if-present
+
+      - name: Run Node typecheck
+        if: steps.detect.outputs.node == 'true'
+        shell: bash
+        run: npm run typecheck --if-present
+
+      - name: Run Node build
+        if: steps.detect.outputs.node == 'true'
+        shell: bash
+        run: npm run build --if-present
+
+      - name: Run Node tests
+        if: steps.detect.outputs.node == 'true'
+        shell: bash
+        run: npm test --if-present
+
+      - name: Setup Python
+        if: steps.detect.outputs.python == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Python dependencies
+        if: steps.detect.outputs.python == 'true'
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f pyproject.toml ]; then pip install -e . || true; fi
+          pip install pytest ruff 2>/dev/null || true
+
+      - name: Run Python lint (ruff)
+        if: steps.detect.outputs.python == 'true'
+        shell: bash
+        run: ruff check . || true
+
+      - name: Run Python tests
+        if: steps.detect.outputs.python == 'true'
+        shell: bash
+        run: |
+          if [ -d tests ] || compgen -G "test_*.py" > /dev/null || compgen -G "*_test.py" > /dev/null; then
+            pytest --tb=short
+          else
+            echo "No tests found, skipping"
+          fi
+
+      - name: Validate YAML
+        shell: bash
+        run: |
+          if compgen -G "**/*.yml" > /dev/null || compgen -G "**/*.yaml" > /dev/null; then
+            python3 -c "import yaml, sys, glob; [yaml.safe_load(open(f)) for f in glob.glob('**/*.y*ml', recursive=True) if '.github' not in f or 'workflows' in f]" || true
+          fi
